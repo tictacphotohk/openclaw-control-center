@@ -1919,6 +1919,25 @@ function isTraditionalChineseLanguage(language: UiLanguage): boolean {
 function toTaiwanText(input: string): string {
   let output = input;
   const phraseReplacements: Array<[string, string]> = [
+    ["总控态势", "總控態勢"],
+    ["推进顺畅", "推進順暢"],
+    ["当前状态", "目前狀態"],
+    ["当前任务", "目前任務"],
+    ["当前 AI 用量", "目前 AI 用量"],
+    ["用量与订阅摘要", "用量與訂閱摘要"],
+    ["当前活跃智能体", "目前活躍智能體"],
+    ["收起检视栏", "收起檢視欄"],
+    ["打开文档工作台", "開啟文件工作臺"],
+    ["返回控制中心", "返回控制中心"],
+    ["工具调用", "工具呼叫"],
+    ["审批", "審批"],
+    ["审阅", "審閱"],
+    ["检视", "檢視"],
+    ["预算", "預算"],
+    ["风险", "風險"],
+    ["检视成员", "檢視成員"],
+    ["检视员工", "檢視成員"],
+    ["活跃", "活躍"],
     ["默认", "預設"],
     ["界面", "介面"],
     ["查看", "檢視"],
@@ -1931,8 +1950,6 @@ function toTaiwanText(input: string): string {
     ["分工与职责", "分工與職責"],
     ["项目", "專案"],
     ["任务", "任務"],
-    ["工具调用", "工具呼叫"],
-    ["工具调用", "工具呼叫"],
     ["当前", "目前"],
     ["订阅", "訂閱"],
     ["费用", "費用"],
@@ -1958,8 +1975,6 @@ function toTaiwanText(input: string): string {
     ["状态", "狀態"],
     ["范围", "範圍"],
     ["累计", "累計"],
-    ["开", "啟"],
-    ["关", "閉"],
     ["刚刚", "剛剛"],
     ["分钟前", "分鐘前"],
     ["小时前", "小時前"],
@@ -1976,7 +1991,6 @@ function toTaiwanText(input: string): string {
     ["暂无", "尚無"],
     ["没有", "沒有"],
     ["打开", "開啟"],
-    ["画", "畫"],
     ["风格", "風格"],
     ["总", "總"],
     ["点", "點"],
@@ -1984,7 +1998,6 @@ function toTaiwanText(input: string): string {
     ["个", "個"],
     ["这", "這"],
     ["现", "現"],
-    ["后", "後"],
     ["台", "臺"],
     ["钟", "鐘"],
     ["网", "網"],
@@ -1993,10 +2006,20 @@ function toTaiwanText(input: string): string {
     ["业", "業"],
     ["东", "東"],
     ["两", "兩"],
-    ["个", "個"],
     ["归", "歸"],
     ["径", "徑"],
     ["简", "簡"],
+    ["体", "體"],
+    ["员", "員"],
+    ["阅", "閱"],
+    ["审", "審"],
+    ["预", "預"],
+    ["风", "風"],
+    ["险", "險"],
+    ["忆", "憶"],
+    ["处", "處"],
+    ["检", "檢"],
+    ["阶", "階"],
     ["触发", "觸發"],
     ["响应", "回應"],
   ];
@@ -5423,6 +5446,7 @@ async function renderHtml(
   const nativeMotionScript = renderNativeMotionScript(options.language);
   const quotaResetScript = renderQuotaResetScript();
   const themeBootScript = renderThemeBootScript();
+  const uiPolishScript = renderUiPolishScript();
   const renderTotalMs = Math.round(performance.now() - renderStartedAt);
   if (renderTotalMs >= 1000) {
     console.warn("[mission-control] slow html render", {
@@ -5433,7 +5457,7 @@ async function renderHtml(
   }
 
   return `<!doctype html>
-<html data-theme="auto">
+<html data-theme="auto" data-ui-language="${escapeHtml(options.language)}">
 <head>
   <meta charset="utf-8" />
   <title>OpenClaw Control Center</title>
@@ -7390,6 +7414,134 @@ async function renderHtml(
       24% { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0, 113, 227, 0.16); }
       100% { transform: translateY(0); box-shadow: 0 0 0 rgba(0, 113, 227, 0); }
     }
+
+    :root[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at 8% -10%, rgba(59, 130, 246, 0.16), transparent 34%),
+        radial-gradient(circle at 92% 0%, rgba(45, 212, 191, 0.12), transparent 28%),
+        linear-gradient(180deg, #0a1020 0%, #0b1220 48%, #09111f 100%);
+      color: var(--text);
+    }
+    :root[data-theme="dark"] body::before {
+      background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.42), rgba(15, 23, 42, 0.1) 42%, transparent 60%),
+        radial-gradient(circle at 18% 16%, rgba(96, 165, 250, 0.14), transparent 24%),
+        radial-gradient(circle at 82% 12%, rgba(45, 212, 191, 0.12), transparent 22%);
+      opacity: 0.9;
+    }
+    :root[data-theme="dark"] .panel {
+      background:
+        linear-gradient(180deg, rgba(11, 18, 32, 0.9), rgba(9, 17, 31, 0.86)),
+        radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.10), transparent 42%) !important;
+      border-color: rgba(148, 163, 184, 0.22) !important;
+      box-shadow: 0 28px 60px rgba(2, 6, 23, 0.5) !important;
+    }
+    :root[data-theme="dark"] .sidebar {
+      background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(10, 16, 29, 0.86)),
+        radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.12), transparent 48%) !important;
+      border-color: rgba(148, 163, 184, 0.22) !important;
+      box-shadow: 0 24px 48px rgba(2, 6, 23, 0.46) !important;
+    }
+    :root[data-theme="dark"] .brand {
+      background:
+        linear-gradient(135deg, rgba(20, 30, 50, 0.92), rgba(10, 16, 29, 0.96)),
+        radial-gradient(circle at 82% 14%, rgba(96, 165, 250, 0.12), transparent 56%) !important;
+      border-color: rgba(148, 163, 184, 0.18) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    :root[data-theme="dark"] .nav-link,
+    :root[data-theme="dark"] .card,
+    :root[data-theme="dark"] .exec-card,
+    :root[data-theme="dark"] .overview-focus-stage,
+    :root[data-theme="dark"] .overview-usage-card,
+    :root[data-theme="dark"] .task-hub-stat,
+    :root[data-theme="dark"] .subscription-pill,
+    :root[data-theme="dark"] .quota-row,
+    :root[data-theme="dark"] .pie-hole,
+    :root[data-theme="dark"] .file-editor-panel,
+    :root[data-theme="dark"] .file-list,
+    :root[data-theme="dark"] .file-preview,
+    :root[data-theme="dark"] .empty-state,
+    :root[data-theme="dark"] .office-card,
+    :root[data-theme="dark"] .staff-brief-card,
+    :root[data-theme="dark"] .project-lane,
+    :root[data-theme="dark"] .compact-table-details summary::after {
+      background: var(--card-fill) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 163, 184, 0.2) !important;
+      box-shadow: 0 18px 42px rgba(2, 6, 23, 0.36), 0 3px 10px rgba(2, 6, 23, 0.18) !important;
+    }
+    :root[data-theme="dark"] :is(
+      .brand h1,
+      .brand-kicker,
+      .nav-link,
+      .nav-link strong,
+      .panel,
+      .card,
+      .card h1,
+      .card h2,
+      .card h3,
+      .card h4,
+      .card strong,
+      .card b,
+      .section-title,
+      .overview-focus-headline,
+      .overview-primary-value,
+      .overview-focus-score,
+      .overview-focus-unit,
+      .quota-label,
+      .pie-hole strong,
+      th,
+      td,
+      summary,
+      code,
+      pre
+    ) {
+      color: var(--text) !important;
+    }
+    :root[data-theme="dark"] :is(
+      .meta,
+      .meta-inline,
+      .section-blurb,
+      .nav-link .meta,
+      .card small,
+      .card .meta,
+      .brand .meta,
+      .quota-value,
+      .quota-foot,
+      .pie-hole span,
+      .pie-legend li,
+      .story-list,
+      .empty-state
+    ) {
+      color: var(--muted) !important;
+    }
+    :root[data-theme="dark"] a {
+      color: #93c5fd;
+    }
+    :root[data-theme="dark"] .btn,
+    :root[data-theme="dark"] .panel-toggle,
+    :root[data-theme="dark"] .theme-toggle-button {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98)) !important;
+      color: #eff6ff !important;
+      border-color: rgba(148, 163, 184, 0.22) !important;
+      box-shadow: 0 10px 22px rgba(2, 6, 23, 0.34) !important;
+    }
+    :root[data-theme="dark"] .badge {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    :root[data-theme="dark"] table,
+    :root[data-theme="dark"] th,
+    :root[data-theme="dark"] td,
+    :root[data-theme="dark"] textarea,
+    :root[data-theme="dark"] input,
+    :root[data-theme="dark"] select {
+      background-color: rgba(15, 23, 42, 0.72) !important;
+      color: var(--text) !important;
+      border-color: rgba(148, 163, 184, 0.18) !important;
+    }
+
     @media (max-width: 1600px) {
       .app-shell { grid-template-columns: 214px minmax(0, 1fr) 272px; gap: 16px; padding: 18px; }
       .section-title { font-size: 34px; }
@@ -7468,7 +7620,7 @@ async function renderHtml(
     }
   </style>
 </head>
-<body class="ui-preload" data-ui-polish="apple-native-v3" data-apple-window-controls="true" data-ui-language="${escapeHtml(options.language)}" style="--fold-open-label:${options.language === "en" ? "'Expand'" : "'展开'"}; --fold-close-label:${options.language === "en" ? "'Collapse'" : "'收起'"};">
+<body class="ui-preload" data-ui-polish="apple-native-v3" data-apple-window-controls="true" data-ui-language="${escapeHtml(options.language)}" style="--fold-open-label:${options.language === "en" ? "'Expand'" : options.language === "zh-tw" ? "'展開'" : "'展开'"}; --fold-close-label:${options.language === "en" ? "'Collapse'" : options.language === "zh-tw" ? "'收合'" : "'收起'"};">
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
@@ -7536,6 +7688,7 @@ async function renderHtml(
   ${nativeMotionScript}
   ${quotaResetScript}
   ${themeBootScript}
+  ${uiPolishScript}
 </body>
 </html>`;
 }
@@ -7579,6 +7732,181 @@ function renderThemeBootScript(): string {
 })();
 </script>`;
 }
+
+
+function renderUiPolishScript(): string {
+  return `<script>
+(function () {
+  function currentLanguage() {
+    var bodyLang = document.body && document.body.getAttribute("data-ui-language");
+    if (bodyLang) return bodyLang.toLowerCase();
+    try {
+      var urlLang = new URLSearchParams(window.location.search).get("lang");
+      return (urlLang || "").toLowerCase();
+    } catch (error) {
+      return "";
+    }
+  }
+  function isTraditional() {
+    var lang = currentLanguage();
+    return lang === "zh-tw";
+  }
+  function convertTraditional(input) {
+    if (!input) return input;
+    var output = String(input);
+    var replacements = [
+      ["总控态势", "總控態勢"],
+      ["推进顺畅", "推進順暢"],
+      ["当前状态", "目前狀態"],
+      ["当前任务", "目前任務"],
+      ["当前 AI 用量", "目前 AI 用量"],
+      ["用量与订阅摘要", "用量與訂閱摘要"],
+      ["当前活跃智能体", "目前活躍智能體"],
+      ["收起检视栏", "收起檢視欄"],
+      ["打开文档工作台", "開啟文件工作臺"],
+      ["查看员工", "檢視成員"],
+      ["查看成员", "檢視成員"],
+      ["审批", "審批"],
+      ["审阅", "審閱"],
+      ["检视", "檢視"],
+      ["预算", "預算"],
+      ["风险", "風險"],
+      ["活跃", "活躍"],
+      ["默认", "預設"],
+      ["界面", "介面"],
+      ["查看", "檢視"],
+      ["查找", "尋找"],
+      ["搜索", "搜尋"],
+      ["文档", "文件"],
+      ["工作台", "工作臺"],
+      ["总览", "總覽"],
+      ["员工", "成員"],
+      ["分工与职责", "分工與職責"],
+      ["项目", "專案"],
+      ["任务", "任務"],
+      ["当前", "目前"],
+      ["订阅", "訂閱"],
+      ["费用", "費用"],
+      ["历史", "歷史"],
+      ["实时", "即時"],
+      ["运行", "執行"],
+      ["会话", "工作階段"],
+      ["连接", "連線"],
+      ["未连接", "未連線"],
+      ["数据", "資料"],
+      ["导入", "匯入"],
+      ["导出", "匯出"],
+      ["设置", "設定"],
+      ["配置", "設定"],
+      ["调度器", "排程器"],
+      ["定时", "排程"],
+      ["时间表", "排程表"],
+      ["启用", "啟用"],
+      ["待执行", "待執行"],
+      ["执行", "執行"],
+      ["说明", "說明"],
+      ["状态", "狀態"],
+      ["范围", "範圍"],
+      ["累计", "累計"],
+      ["刚刚", "剛剛"],
+      ["分钟前", "分鐘前"],
+      ["小时前", "小時前"],
+      ["系统", "系統"],
+      ["并", "並"],
+      ["信号", "訊號"],
+      ["后", "後"],
+      ["从", "從"],
+      ["与", "與"],
+      ["为", "為"],
+      ["里", "裡"],
+      ["还", "還"],
+      ["暂无", "尚無"],
+      ["没有", "沒有"],
+      ["打开", "開啟"],
+      ["风格", "風格"],
+      ["总", "總"],
+      ["点", "點"],
+      ["项", "項"],
+      ["个", "個"],
+      ["这", "這"],
+      ["现", "現"],
+      ["台", "臺"],
+      ["钟", "鐘"],
+      ["网", "網"],
+      ["图", "圖"],
+      ["专", "專"],
+      ["业", "業"],
+      ["东", "東"],
+      ["两", "兩"],
+      ["归", "歸"],
+      ["径", "徑"],
+      ["简", "簡"],
+      ["体", "體"],
+      ["员", "員"],
+      ["阅", "閱"],
+      ["审", "審"],
+      ["预", "預"],
+      ["风", "風"],
+      ["险", "險"],
+      ["忆", "憶"],
+      ["处", "處"],
+      ["检", "檢"],
+      ["阶", "階"]
+    ];
+    for (var i = 0; i < replacements.length; i += 1) {
+      output = output.split(replacements[i][0]).join(replacements[i][1]);
+    }
+    return output;
+  }
+  function polishTraditionalText() {
+    if (!isTraditional()) return;
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (node) {
+        var parent = node.parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        var tag = parent.tagName;
+        if (tag === "SCRIPT" || tag === "STYLE" || tag === "TEXTAREA" || tag === "CODE" || tag === "PRE") {
+          return NodeFilter.FILTER_REJECT;
+        }
+        var value = node.nodeValue || "";
+        return value.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    var current;
+    while ((current = walker.nextNode())) {
+      current.nodeValue = convertTraditional(current.nodeValue || "");
+    }
+    var attrNodes = document.querySelectorAll("[title],[aria-label],[placeholder]");
+    attrNodes.forEach(function (el) {
+      ["title", "aria-label", "placeholder"].forEach(function (name) {
+        var value = el.getAttribute(name);
+        if (value) el.setAttribute(name, convertTraditional(value));
+      });
+    });
+  }
+  function markThemeButtons() {
+    var root = document.documentElement;
+    var theme = root.getAttribute("data-theme") || "light";
+    document.querySelectorAll("[data-theme-choice]").forEach(function (button) {
+      button.classList.toggle("active", button.getAttribute("data-theme-choice") === theme);
+    });
+  }
+  function run() {
+    polishTraditionalText();
+    markThemeButtons();
+    document.body.classList.add("ui-ready");
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    run();
+    var observer = new MutationObserver(function () {
+      run();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  });
+})();
+</script>`;
+}
+
 
 function parseTaskFilters(searchParams: URLSearchParams, strict: boolean): TaskQueryFilters {
   assertAllowedQueryParams(searchParams, ["quick", "status", "owner", "project"], strict);
