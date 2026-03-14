@@ -753,7 +753,7 @@ export function startUiServer(port: number, toolClient: ToolClient): Server {
         const section = legacySection ?? resolveDashboardSection(url.searchParams);
         const resolvedLanguage = resolveUiLanguage(url.searchParams, prefs.preferences.language);
         const hasExplicitLanguage = hasAnyQueryKey(url.searchParams, ["lang"]);
-        const language: UiLanguage = hasExplicitLanguage ? resolvedLanguage : "zh";
+        const language: UiLanguage = hasExplicitLanguage ? resolvedLanguage : "zh-tw";
         const compactStatusStrip = resolveCompactStatusStrip(url.searchParams, prefs.preferences.compactStatusStrip);
         const usageView = resolveUsageView(url.searchParams);
         const search = resolveDashboardSearchQuery(url.searchParams);
@@ -795,7 +795,7 @@ export function startUiServer(port: number, toolClient: ToolClient): Server {
 
       if (method === "GET" && path === "/docs") {
         assertAllowedQueryParams(url.searchParams, ["lang"], true);
-        const language = resolveUiLanguage(url.searchParams, "zh");
+        const language = resolveUiLanguage(url.searchParams, "zh-tw");
         const t = (en: string, zh: string): string => pickUiText(language, en, zh);
         const links = DOC_LINKS.map(
           (item) => `<li><a href="${item.href}?lang=${encodeURIComponent(language)}">${escapeHtml(item.label)}</a></li>`,
@@ -1387,7 +1387,7 @@ export function startUiServer(port: number, toolClient: ToolClient): Server {
 
       if (method === "GET" && path.startsWith("/session/")) {
         const snapshot = await readReadModelSnapshotWithLiveSessions(toolClient);
-        const language = resolveUiLanguage(url.searchParams, "zh");
+        const language = resolveUiLanguage(url.searchParams, "zh-tw");
         const sessionKey = decodeRouteParam(path, /^\/session\/([^/]+)$/, "sessionKey");
         assertAllowedQueryParams(url.searchParams, ["historyLimit"], false);
         const historyLimit = readPositiveIntQuery(
@@ -1414,7 +1414,7 @@ export function startUiServer(port: number, toolClient: ToolClient): Server {
 
       if (method === "GET" && path.startsWith("/details/task/")) {
         const snapshot = await readReadModelSnapshotWithLiveSessions(toolClient);
-        const language = resolveUiLanguage(url.searchParams, "zh");
+        const language = resolveUiLanguage(url.searchParams, "zh-tw");
         const taskId = decodeRouteParam(path, /^\/details\/task\/([^/]+)$/, "taskId");
         const tasks = listTasks(snapshot.tasks, projectTitleMap(snapshot));
         const task = tasks.find((item) => item.taskId === taskId);
@@ -1449,7 +1449,7 @@ export function startUiServer(port: number, toolClient: ToolClient): Server {
 
       if (method === "GET" && path.startsWith("/details/cron/")) {
         const snapshot = await readReadModelSnapshot();
-        const language = resolveUiLanguage(url.searchParams, "zh");
+        const language = resolveUiLanguage(url.searchParams, "zh-tw");
         const jobId = decodeRouteParam(path, /^\/details\/cron\/([^/]+)$/, "jobId");
         const overview = await buildCronOverview(snapshot, POLLING_INTERVALS_MS.cron);
         const catalog = await loadOpenclawCronCatalog(language);
@@ -1908,8 +1908,107 @@ async function readNotificationCenter(snapshot: ReadModelSnapshot): Promise<Noti
   return buildNotificationCenter(exceptionsFeed, acks, linksByItemId);
 }
 
+function isChineseLanguage(language: UiLanguage): boolean {
+  return language === "zh" || language === "zh-cn" || language === "zh-tw";
+}
+
+function isTraditionalChineseLanguage(language: UiLanguage): boolean {
+  return language === "zh-tw";
+}
+
+function toTaiwanText(input: string): string {
+  let output = input;
+  const phraseReplacements: Array<[string, string]> = [
+    ["默认", "預設"],
+    ["界面", "介面"],
+    ["查看", "檢視"],
+    ["查找", "尋找"],
+    ["搜索", "搜尋"],
+    ["文档", "文件"],
+    ["工作台", "工作臺"],
+    ["总览", "總覽"],
+    ["员工", "成員"],
+    ["分工与职责", "分工與職責"],
+    ["项目", "專案"],
+    ["任务", "任務"],
+    ["工具调用", "工具呼叫"],
+    ["工具调用", "工具呼叫"],
+    ["当前", "目前"],
+    ["订阅", "訂閱"],
+    ["费用", "費用"],
+    ["历史", "歷史"],
+    ["实时", "即時"],
+    ["运行", "執行"],
+    ["会话", "工作階段"],
+    ["连接", "連線"],
+    ["未连接", "未連線"],
+    ["数据", "資料"],
+    ["导入", "匯入"],
+    ["导出", "匯出"],
+    ["设置", "設定"],
+    ["配置", "設定"],
+    ["调度器", "排程器"],
+    ["定时", "排程"],
+    ["时间表", "排程表"],
+    ["启用", "啟用"],
+    ["待执行", "待執行"],
+    ["执行", "執行"],
+    ["块", "區塊"],
+    ["说明", "說明"],
+    ["状态", "狀態"],
+    ["范围", "範圍"],
+    ["累计", "累計"],
+    ["开", "啟"],
+    ["关", "閉"],
+    ["刚刚", "剛剛"],
+    ["分钟前", "分鐘前"],
+    ["小时前", "小時前"],
+    ["系统", "系統"],
+    ["并", "並"],
+    ["信号", "訊號"],
+    ["画面", "畫面"],
+    ["后", "後"],
+    ["从", "從"],
+    ["与", "與"],
+    ["为", "為"],
+    ["里", "裡"],
+    ["还", "還"],
+    ["暂无", "尚無"],
+    ["没有", "沒有"],
+    ["打开", "開啟"],
+    ["画", "畫"],
+    ["风格", "風格"],
+    ["总", "總"],
+    ["点", "點"],
+    ["项", "項"],
+    ["个", "個"],
+    ["这", "這"],
+    ["现", "現"],
+    ["后", "後"],
+    ["台", "臺"],
+    ["钟", "鐘"],
+    ["网", "網"],
+    ["图", "圖"],
+    ["专", "專"],
+    ["业", "業"],
+    ["东", "東"],
+    ["两", "兩"],
+    ["个", "個"],
+    ["归", "歸"],
+    ["径", "徑"],
+    ["简", "簡"],
+    ["触发", "觸發"],
+    ["响应", "回應"],
+  ];
+  for (const [from, to] of phraseReplacements) {
+    output = output.split(from).join(to);
+  }
+  return output;
+}
+
 function pickUiText(language: UiLanguage, en: string, zh: string): string {
-  return language === "zh" ? zh : en;
+  if (isTraditionalChineseLanguage(language)) return toTaiwanText(zh);
+  return isChineseLanguage(language) ? zh : en;
 }
 
 function delay(ms: number): Promise<void> {
@@ -1917,7 +2016,7 @@ function delay(ms: number): Promise<void> {
 }
 
 function globalVisibilityCopy(language: UiLanguage): GlobalVisibilityCopy {
-  if (language === "zh") {
+  if (isChineseLanguage(language)) {
     return {
       title: "全局总览",
       summary: "一眼看四件事：定时任务、任务心跳、当前任务、工具调用。",
@@ -2410,7 +2509,7 @@ async function buildGlobalVisibilityViewModel(
 
 function dashboardSectionLinks(language: UiLanguage): DashboardSectionLink[] {
   return DASHBOARD_SECTION_LINKS_EN.map((item) => {
-    if (language !== "zh") return item;
+    if (!isChineseLanguage(language)) return item;
 
     if (item.key === "overview") {
       return { ...item, label: "总览", blurb: "今天重点" };
@@ -2892,7 +2991,7 @@ function buildInformationCertaintyModel(input: {
 
 function renderInformationCertaintyCard(
   model: InformationCertaintyModel,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   const connectedCount = model.signals.filter((signal) => signal.status === "connected").length;
   const partialCount = model.signals.filter((signal) => signal.status === "partial").length;
@@ -3214,7 +3313,7 @@ function taskCertaintyToneRank(tone: TaskCertaintyCard["tone"]): number {
 
 function renderTaskCertaintySection(
   cards: TaskCertaintyCard[],
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (cards.length === 0) {
     return `<section class="card" id="task-certainty-board">
@@ -5323,6 +5422,7 @@ async function renderHtml(
   const agentVisualEnhancerScript = renderAgentVisualEnhancerScript();
   const nativeMotionScript = renderNativeMotionScript(options.language);
   const quotaResetScript = renderQuotaResetScript();
+  const themeBootScript = renderThemeBootScript();
   const renderTotalMs = Math.round(performance.now() - renderStartedAt);
   if (renderTotalMs >= 1000) {
     console.warn("[mission-control] slow html render", {
@@ -5333,7 +5433,7 @@ async function renderHtml(
   }
 
   return `<!doctype html>
-<html>
+<html data-theme="auto">
 <head>
   <meta charset="utf-8" />
   <title>OpenClaw Control Center</title>
@@ -5390,6 +5490,47 @@ async function renderHtml(
       --space-3: 24px;
       --space-4: 32px;
     }
+
+    :root[data-theme="dark"] {
+      --bg: #0b1220;
+      --panel: #121a2a;
+      --panel-soft: #10192a;
+      --surface-1: rgba(18, 26, 42, 0.98);
+      --surface-2: rgba(17, 24, 39, 0.96);
+      --surface-3: rgba(15, 23, 42, 0.92);
+      --glass-1: rgba(17, 24, 39, 0.78);
+      --glass-2: rgba(15, 23, 42, 0.74);
+      --border: rgba(148, 163, 184, 0.18);
+      --border-soft: rgba(148, 163, 184, 0.1);
+      --border-strong: rgba(148, 163, 184, 0.26);
+      --text: #e6edf3;
+      --muted: #9aa7b8;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --over: #f87171;
+      --todo: #94a3b8;
+      --progress: #60a5fa;
+      --blocked: #fb923c;
+      --done: #4ade80;
+      --focus: #60a5fa;
+      --shadow-soft: 0 8px 24px rgba(2, 6, 23, 0.38);
+      --shadow-hard: 0 22px 56px rgba(2, 6, 23, 0.52);
+      --shadow-float: 0 18px 44px rgba(2, 6, 23, 0.48);
+      --shadow-press: 0 10px 24px rgba(2, 6, 23, 0.42);
+      --card-fill:
+        linear-gradient(180deg, rgba(18, 26, 42, 0.99), rgba(15, 23, 42, 0.975) 56%, rgba(10, 16, 29, 0.95)),
+        radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.12), transparent 54%);
+      --card-fill-soft:
+        linear-gradient(180deg, rgba(16, 24, 38, 0.975), rgba(15, 23, 42, 0.955) 58%, rgba(10, 16, 29, 0.93)),
+        radial-gradient(circle at 100% 0%, rgba(34, 197, 94, 0.09), transparent 52%);
+      --card-border: rgba(148, 163, 184, 0.16);
+      --card-border-strong: rgba(148, 163, 184, 0.24);
+      --card-shadow-soft: 0 14px 30px rgba(2, 6, 23, 0.34), 0 2px 8px rgba(2, 6, 23, 0.24);
+      --card-shadow: 0 20px 42px rgba(2, 6, 23, 0.42), 0 3px 10px rgba(2, 6, 23, 0.28);
+      --card-shadow-hover: 0 28px 52px rgba(2, 6, 23, 0.52), 0 4px 14px rgba(2, 6, 23, 0.32);
+      --ring-soft: 0 0 0 4px rgba(96, 165, 250, 0.18);
+    }
+
     * { box-sizing: border-box; }
     body {
       font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
@@ -7394,8 +7535,49 @@ async function renderHtml(
   ${fileWorkbenchScript}
   ${nativeMotionScript}
   ${quotaResetScript}
+  ${themeBootScript}
 </body>
 </html>`;
+}
+
+
+function renderThemeBootScript(): string {
+  return `<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = [];
+  function setTheme(mode) {
+    var next = mode === "dark" || mode === "light" ? mode : "auto";
+    if (next === "auto") {
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      root.setAttribute("data-theme", prefersDark ? "dark" : "light");
+      try { localStorage.removeItem("occc-theme"); } catch (error) {}
+    } else {
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("occc-theme", next); } catch (error) {}
+    }
+    buttons.forEach(function (button) {
+      button.classList.toggle("active", button.getAttribute("data-theme-choice") === next);
+    });
+  }
+  function initialTheme() {
+    try {
+      var saved = localStorage.getItem("occc-theme");
+      if (saved === "light" || saved === "dark") return saved;
+    } catch (error) {}
+    return "auto";
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    buttons = Array.prototype.slice.call(document.querySelectorAll("[data-theme-choice]"));
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setTheme(button.getAttribute("data-theme-choice") || "auto");
+      });
+    });
+    setTheme(initialTheme());
+  });
+})();
+</script>`;
 }
 
 function parseTaskFilters(searchParams: URLSearchParams, strict: boolean): TaskQueryFilters {
@@ -7725,7 +7907,7 @@ function buildDashboardSearchResult(
 
 function renderDashboardSearchResult(
   result: DashboardSearchResult | undefined,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (!result) {
     return `<div class="meta" style="margin-top:8px;">${escapeHtml(
@@ -8980,12 +9162,17 @@ function hasAnyQueryKey(searchParams: URLSearchParams, keys: string[]): boolean 
 
 function renderLanguageToggle(filters: TaskQueryFilters, options: DashboardOptions): string {
   const enHref = buildHomeHref(filters, options.compactStatusStrip, options.section, "en", options.usageView);
-  const zhHref = buildHomeHref(filters, options.compactStatusStrip, options.section, "zh", options.usageView);
+  const zhTwHref = buildHomeHref(filters, options.compactStatusStrip, options.section, "zh-tw", options.usageView);
+  const zhCnHref = buildHomeHref(filters, options.compactStatusStrip, options.section, "zh-cn", options.usageView);
   const enClass = options.language === "en" ? " class=\"active\"" : "";
-  const zhClass = options.language === "zh" ? " class=\"active\"" : "";
-  const label = pickUiText(options.language, "Language:", "语言：");
-  const zhLabel = pickUiText(options.language, "中文", "中文");
-  return `<div class="meta lang-toggle">${label} <a${enClass} href="${escapeHtml(enHref)}">EN</a> / <a${zhClass} href="${escapeHtml(zhHref)}">${zhLabel}</a></div>`;
+  const zhTwClass = options.language === "zh-tw" ? " class=\"active\"" : "";
+  const zhCnClass = (options.language === "zh-cn" || options.language === "zh") ? " class=\"active\"" : "";
+  const label = pickUiText(options.language, "Language:", "語言：");
+  const themeLabel = pickUiText(options.language, "Theme:", "版面：");
+  const autoLabel = pickUiText(options.language, "Auto", "自動");
+  const lightLabel = pickUiText(options.language, "Light", "淺色");
+  const darkLabel = pickUiText(options.language, "Dark", "深色");
+  return `<div class="meta lang-toggle">${label} <a${enClass} href="${escapeHtml(enHref)}">EN</a> / <a${zhTwClass} href="${escapeHtml(zhTwHref)}">繁</a> / <a${zhCnClass} href="${escapeHtml(zhCnHref)}">簡</a><span class="lang-toggle-divider"> · </span><span>${themeLabel}</span> <button type="button" class="theme-toggle-button" data-theme-choice="auto">${escapeHtml(autoLabel)}</button> / <button type="button" class="theme-toggle-button" data-theme-choice="light">${escapeHtml(lightLabel)}</button> / <button type="button" class="theme-toggle-button" data-theme-choice="dark">${escapeHtml(darkLabel)}</button></div>`;
 }
 
 function buildHomeHref(
@@ -9162,7 +9349,7 @@ export function buildOfficeSpaceCards(
   tasks: TaskListItem[],
   knownAgentIds: string[] = [],
   runtimeActiveSessionsByAgent: Map<string, number> = new Map(),
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): OfficeSpaceCard[] {
   const configuredAgentKeys = new Set(
     knownAgentIds.map((agentId) => normalizeLookupKey(agentId)).filter((agentId) => agentId.length > 0),
@@ -9436,7 +9623,7 @@ function buildOfficeSummary(
   status: OfficeSpaceCard["status"],
   focusItems: string[],
   sessionCount: number,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (focusItems.length === 0 && sessionCount === 0) {
     return pickUiText(language, "No live task right now.", "当前没有实时任务。");
@@ -9948,7 +10135,7 @@ function compareTaskExecutionChainCards(a: TaskExecutionChainCard, b: TaskExecut
 
 function summarizeVisibleSessionSnippet(
   rawSnippet: string | undefined,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
   maxLength = 96,
 ): string {
   const normalized = normalizeInlineText(rawSnippet ?? "");
@@ -10219,7 +10406,7 @@ function executionChainStageRank(stage: SessionExecutionChainSummary["stage"]): 
 
 function executionChainStageLabel(
   stage: SessionExecutionChainSummary["stage"],
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   switch (stage) {
     case "running":
@@ -10236,7 +10423,7 @@ function executionChainStageLabel(
 
 function executionChainSourceLabel(
   chain: SessionExecutionChainSummary,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (chain.source === "history") {
     return chain.inferred
@@ -10258,7 +10445,7 @@ function extractCronJobIdFromSessionKey(sessionKey: string): string | undefined 
 
 function renderTaskExecutionChainCards(
   cards: TaskExecutionChainCard[],
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (cards.length === 0) {
     return `<div class="empty-state">${escapeHtml(
@@ -11735,7 +11922,7 @@ function renderQuotaWindowRow(
   remainingPercent?: number;
   resetAt?: string;
   },
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   const usedPercent = asPercent(input.usedPercent);
   const remainingPercent = asPercent(input.remainingPercent);
@@ -11761,7 +11948,7 @@ function renderQuotaWindowRow(
 
 function renderSubscriptionSidebarSummary(
   subscription: UsageCostSnapshot["subscription"],
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (subscription.status === "connected" && (subscription.primaryWindowLabel || subscription.secondaryUsedPercent !== undefined)) {
     const primaryUsed = asPercent(subscription.primaryUsedPercent ?? subscription.usagePercent);
@@ -11803,7 +11990,7 @@ function renderSubscriptionSidebarSummary(
 
 function renderSubscriptionStatusCard(
   subscription: UsageCostSnapshot["subscription"],
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   const statusLabel =
     subscription.status === "connected"
@@ -12202,7 +12389,7 @@ function renderUsageContextRows(rows: UsageCostSnapshot["contextWindows"], langu
 function renderUsageBreakdownRows(
   rows: UsageCostSnapshot["breakdown"]["byAgent"],
   label: string,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (rows.length === 0) return "";
 
@@ -12217,7 +12404,7 @@ function renderUsageBreakdownRows(
 function renderTokenShareRows(
   rows: UsageCostSnapshot["breakdown"]["byAgent"],
   totalTokens: number,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   if (rows.length === 0) return "";
   const safeTotal = totalTokens > 0 ? totalTokens : rows.reduce((sum, item) => sum + item.tokens, 0);
@@ -12246,7 +12433,7 @@ function renderTokenPieChart(
   rows: UsageCostSnapshot["breakdown"]["byAgent"],
   totalTokens: number,
   centerLabel: string,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   const sourceRows = rows.filter((item) => item.tokens > 0);
   if (sourceRows.length === 0 || totalTokens <= 0) return "";
@@ -12749,7 +12936,7 @@ function renderCronJobDetailPage(
     dueInSeconds?: number;
   },
   generatedAt: string,
-  language: UiLanguage = "zh",
+  language: UiLanguage = "zh-tw",
 ): string {
   return `<!doctype html>
 <html>
@@ -12934,10 +13121,10 @@ function renderMetricSummary(item: BudgetEvaluation): string {
 function formatSeconds(value: number | undefined, language: UiLanguage = "en"): string {
   if (!Number.isFinite(value)) return "-";
   const seconds = Math.round(value as number);
-  if (seconds === 0) return language === "zh" ? "现在" : "now";
+  if (seconds === 0) return isChineseLanguage(language) ? pickUiText(language, "now", "现在") : "now";
   const abs = Math.abs(seconds);
   const sign = seconds < 0 ? "-" : "";
-  if (language === "zh") {
+  if (isChineseLanguage(language)) {
     if (abs < 60) return `${sign}${abs}秒`;
     const minutes = Math.floor(abs / 60);
     const rem = abs % 60;
