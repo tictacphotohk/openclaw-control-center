@@ -12,4 +12,4 @@ RUN npm run build || true
 
 EXPOSE 4310
 
-CMD ["npm","run","dev"]
+CMD ["npm","run","dev:ui"]
